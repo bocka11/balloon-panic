@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Balloon Panic – Pixel Art Balloon Popping Game</title>
+<meta name="description" content="Balloon Panic is a free pixel-art arcade game for Android. Pop the rising balloons before they reach the spikes, dodge skull bombs and beat your friends on weekly leaderboards.">
+<link rel="canonical" href="https://balloonpanic.app/">
+<meta name="theme-color" content="#1b1530">
+<link rel="icon" type="image/png" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Balloon Panic">
+<meta property="og:title" content="Balloon Panic – Pop the balloons before they hit the spikes">
+<meta property="og:description" content="A free pixel-art arcade game for Android. How long can you last?">
+<meta property="og:url" content="https://balloonpanic.app/">
+<meta property="og:image" content="https://balloonpanic.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Balloon Panic">
+<meta name="twitter:description" content="Pop the balloons before they hit the spikes. A free pixel-art arcade game for Android.">
+<meta name="twitter:image" content="https://balloonpanic.app/og-image.png">
+<script type="application/ld+json">{
+ "@context": "https://schema.org",
+ "@type": "VideoGame",
+ "name": "Balloon Panic",
+ "url": "https://balloonpanic.app/",
+ "description": "Pixel-art arcade game: pop the rising balloons before they reach the spikes. Rare balloons give extra lives, slow motion and big points. Compete with friends on weekly leaderboards.",
+ "image": "https://balloonpanic.app/og-image.png",
+ "genre": [
+  "Arcade",
+  "Casual"
+ ],
+ "gamePlatform": "Android",
+ "operatingSystem": "Android",
+ "applicationCategory": "GameApplication",
+ "offers": {
+  "@type": "Offer",
+  "price": "0",
+  "priceCurrency": "EUR"
+ },
+ "author": {
+  "@type": "Person",
+  "name": "Boban Todosov"
+ },
+ "publisher": {
+  "@type": "Person",
+  "name": "Boban Todosov"
+ }
+}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap">
+<style>
+/* Layout: one dusk-sky world. A live pixel canvas hero under a spiked top bar, then a single readable column; the policy reads like a game manual's fine print. Single dark look by design, matching the game. */
+:root{
+  --night:#1b1530;    /* page ground, the game's top sky band */
+  --panel:#251d42;    /* raised surfaces */
+  --line:#3a2f63;     /* rules and borders */
+  --ink:#f4ecd8;      /* body text, the balloon string colour */
+  --muted:#b9b0cf;    /* secondary text */
+  --coral:#ff5d6c;    /* the balloon, primary accent */
+  --gold:#ffcf4a;     /* links and highlights */
+  --steel:#c9d1e0;    /* spikes */
+  --outline:#120c22;
+  --display:"Press Start 2P", ui-monospace, "Courier New", monospace;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--night); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.6}
+.wrap{max-width:760px; margin:0 auto; padding-left:max(16px, env(safe-area-inset-left, 0px)); padding-right:max(16px, env(safe-area-inset-right, 0px))}
+
+/* top bar */
+.bar{background:var(--outline); border-bottom:3px solid #8c96aa}
+.bar .wrap{display:flex; align-items:center; justify-content:space-between; gap:16px; padding-block:12px}
+.brand{display:flex; align-items:center; gap:12px; color:var(--ink); text-decoration:none; font-family:var(--display); font-size:12px; letter-spacing:.04em}
+.brand img{width:40px; height:40px; image-rendering:pixelated; box-shadow:0 0 0 2px var(--outline), 3px 3px 0 2px #000}
+.bar nav{display:flex; gap:18px; flex-wrap:wrap}
+.bar nav a{font-family:var(--display); font-size:10px; color:var(--muted); text-decoration:none; letter-spacing:.06em}
+.bar nav a:hover{color:var(--gold)}
+
+/* hero */
+.hero{position:relative; overflow:hidden; border-bottom:3px solid var(--outline)}
+.hero canvas{display:block; width:100%; height:340px; image-rendering:pixelated; image-rendering:crisp-edges}
+.hero .copy{position:absolute; inset:0; display:flex; flex-direction:column; justify-content:center; pointer-events:none}
+.hero h1{font-family:var(--display); font-size:clamp(26px,6vw,46px); line-height:1.25; margin:0 0 14px; color:var(--coral); text-shadow:4px 4px 0 var(--outline); text-wrap:balance}
+.hero h1 span{color:var(--gold)}
+.hero p{margin:0; max-width:30ch; font-size:18px; text-shadow:2px 2px 0 var(--outline)}
+.chip{display:inline-block; margin-top:18px; font-family:var(--display); font-size:10px; color:var(--outline); background:var(--gold); padding:10px 12px; box-shadow:3px 3px 0 #000; letter-spacing:.05em; pointer-events:auto; align-self:flex-start}
+
+main section{padding-block:44px; border-bottom:2px dashed var(--line)}
+main section:last-of-type{border-bottom:0}
+h2{font-family:var(--display); font-size:15px; line-height:1.5; margin:0 0 20px; color:var(--gold); letter-spacing:.04em; text-wrap:balance}
+h3{font-family:var(--body); font-size:19px; margin:30px 0 8px; color:var(--ink)}
+p,li{max-width:65ch}
+a{color:var(--gold)}
+a:focus-visible,button:focus-visible{outline:3px solid var(--coral); outline-offset:3px}
+
+.rules{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; margin:0; padding:0; list-style:none}
+.rules li{background:var(--panel); padding:16px; border:2px solid var(--line)}
+.rules b{display:block; font-family:var(--display); font-size:10px; color:var(--coral); margin-bottom:8px; letter-spacing:.05em}
+
+.types{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
+.type.wide{grid-column:1/-1}
+.type{display:flex; gap:14px; align-items:flex-start; background:var(--panel); padding:14px; border:2px solid var(--line)}
+.type canvas{width:52px; height:64px; flex:none; image-rendering:pixelated}
+.type div{min-width:0}
+.type strong{display:block; font-size:17px}
+.type span{color:var(--muted); font-size:15px}
+
+.facts{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 28px; padding:0; margin:0; list-style:none}
+.facts li{padding-left:20px; position:relative}
+.facts li::before{content:""; position:absolute; left:0; top:.55em; width:8px; height:8px; background:var(--coral); box-shadow:2px 2px 0 var(--outline)}
+
+/* policy */
+.summary{background:var(--panel); border:2px solid var(--steel); padding:18px 20px; margin-bottom:8px}
+.summary ul{margin:8px 0 0; padding-left:20px}
+.meta{font-size:15px; color:var(--muted)}
+.policy p,.policy li{color:var(--ink)}
+.policy ul{padding-left:22px}
+.policy table{border-collapse:collapse; width:100%; font-size:15px; min-width:520px}
+.policy th,.policy td{text-align:left; vertical-align:top; padding:10px 12px; border:1px solid var(--line)}
+.policy th{background:var(--panel); font-weight:700}
+.scroll{overflow-x:auto}
+
+.contact{display:flex; flex-wrap:wrap; gap:12px; align-items:center; background:var(--panel); border:2px solid var(--line); padding:16px}
+.contact code{font-family:var(--body); font-size:18px; font-weight:700; user-select:all; color:var(--ink); word-break:break-all}
+button{font-family:var(--display); font-size:10px; color:var(--outline); background:var(--gold); border:0; padding:10px 12px; box-shadow:3px 3px 0 #000; cursor:pointer; letter-spacing:.05em}
+button:active{transform:translate(2px,2px); box-shadow:1px 1px 0 #000}
+.toast{font-size:14px; color:var(--muted)}
+
+footer{background:var(--outline)}
+footer .wrap{padding-block:22px; font-size:14px; color:var(--muted); display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px}
+
+@media (max-width:640px){
+  .rules,.types,.facts{grid-template-columns:minmax(0,1fr)}
+  .hero canvas{height:380px}
+  .bar nav{gap:12px}
+}
+</style>
+<style>body{margin:0} img{max-width:100%}</style>
+</head>
+<body>
+<header class="bar">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="icon-192.png" width="40" height="40" alt="Balloon Panic app icon">BALLOON PANIC</a>
+    <nav aria-label="Page sections"><a href="#play">PLAY</a><a href="#privacy">PRIVACY</a><a href="#contact">CONTACT</a></nav>
+  </div>
+</header>
+
+<div class="hero" id="top">
+  <canvas id="sky" aria-hidden="true"></canvas>
+  <div class="copy"><div class="wrap" style="display:flex;flex-direction:column">
+    <h1>BALLOON<br><span>PANIC</span></h1>
+    <p>Pop the balloons before they reach the spikes. Every miss costs a life.</p>
+    <span class="chip">COMING SOON TO GOOGLE PLAY</span>
+  </div></div>
+</div>
+
+<main class="wrap">
+  <section id="play" aria-labelledby="h-play">
+    <h2 id="h-play">HOW TO PLAY</h2>
+    <ul class="rules">
+      <li><b>TAP</b>Balloons float up from the city below. Tap one to pop it and score points.</li>
+      <li><b>DON'T MISS</b>A row of spikes waits at the top. Each balloon that touches them costs one of your 3 lives. Lose them all and the game ends.</li>
+      <li><b>SURVIVE</b>Every 10 seconds the level rises. Balloons get faster and come in bigger groups.</li>
+    </ul>
+
+    <h3>Balloon types</h3>
+    <div class="types">
+      <div class="type wide"><canvas data-kind="normal" width="13" height="16"></canvas><div><strong>Balloon</strong><span>Faster balloons are worth more points.</span></div></div>
+      <div class="type"><canvas data-kind="gold" width="13" height="16"></canvas><div><strong>Gold balloon</strong><span>Rare and quick. Worth 5 points or more.</span></div></div>
+      <div class="type"><canvas data-kind="clock" width="13" height="16"></canvas><div><strong>Hourglass</strong><span>Pop it to slow everything down for a few seconds.</span></div></div>
+      <div class="type"><canvas data-kind="life" width="13" height="16"></canvas><div><strong>Extra life</strong><span>The rarest and fastest balloon. Pop it for +1 life, up to 5.</span></div></div>
+      <div class="type"><canvas data-kind="bomb" width="13" height="16"></canvas><div><strong>Skull bomb</strong><span>Never pop it. Let it burst on the spikes.</span></div></div>
+    </div>
+
+    <h3>Features</h3>
+    <ul class="facts">
+      <li>Difficulty that ramps up the longer you last</li>
+      <li>Combo multiplier up to ×5 for quick pops</li>
+      <li>Start with 3 lives and catch rare balloons for up to 5</li>
+      <li>Hand-made pixel art and chiptune sounds</li>
+            <li>Plays offline, no account needed</li>
+      <li>Free to play, with optional ads</li>
+    </ul>
+  </section>
+
+  <section id="privacy" class="policy" aria-labelledby="h-privacy">
+    <h2 id="h-privacy">PRIVACY POLICY</h2>
+    <p class="meta">Effective date: 3 November 2026 · Applies to the Balloon Panic mobile game for Android and iOS</p>
+
+    <div class="summary">
+      <strong>In short</strong>
+      <ul>
+        <li>Balloon Panic does not ask for your name, email or any account.</li>
+        <li>Your best score and settings stay on your device. They are not sent to us.</li>
+        <li>The game shows ads from Google AdMob. AdMob may collect device information, including your advertising ID, to show and measure ads.</li>
+        <li>Where the law requires it, you are asked for consent before personalised ads, and you can change your choice at any time.</li>
+      </ul>
+    </div>
+
+    <h3>Who we are</h3>
+    <p>Balloon Panic is developed and published by Boban Todosov, an independent developer (“we”, “us”). This policy explains what information the game uses, why, and the choices you have. If you have questions, see <a href="#contact">Contact</a>.</p>
+
+    <h3>Information stored on your device</h3>
+    <p>The game saves your best score and your sound setting in the game's own storage on your device. This information is never sent to us or to anyone else. Uninstalling the game deletes it.</p>
+
+    <h3>Advertising</h3>
+    <p>Balloon Panic is free and is supported by ads served by Google AdMob, a service of Google. Some ads are optional: for example, you can choose to watch an ad to continue a run after a game over.</p>
+    <p>To show ads, measure their performance and prevent fraud, AdMob may collect and process the following information from your device:</p>
+    <div class="scroll"><table>
+      <thead><tr><th>Information</th><th>Used for</th></tr></thead>
+      <tbody>
+        <tr><td>Advertising ID (Android advertising ID or Apple IDFA, where allowed)</td><td>Showing ads, limiting how often you see the same ad, and personalised ads where you consented</td></tr>
+        <tr><td>IP address, which can indicate your approximate location</td><td>Choosing ads suitable for your country and language, fraud prevention</td></tr>
+        <tr><td>Device and app information (model, operating system, language, app version)</td><td>Showing ads that work on your device</td></tr>
+        <tr><td>Ad interactions (ads shown, taps, completed rewarded ads)</td><td>Measuring ads and granting in-game rewards</td></tr>
+        <tr><td>Diagnostic information about the ad service</td><td>Keeping ads working and fixing problems</td></tr>
+      </tbody>
+    </table></div>
+    <p>We do not receive this information in a form that identifies you. Google processes it under its own policies: <a href="https://policies.google.com/privacy" rel="noopener">Google Privacy Policy</a> and <a href="https://policies.google.com/technologies/partner-sites" rel="noopener">How Google uses information from sites or apps that use its services</a>.</p>
+
+    <h3>Consent for personalised ads</h3>
+    <p>If you are in the European Economic Area, the United Kingdom or Switzerland, the game shows a consent form from Google's User Messaging Platform when you first open it. You can accept or refuse personalised ads. If you refuse, you may still see non-personalised ads, which are based on general information such as the game itself and your approximate location. You can review or change your choice at any time from <strong>Privacy settings</strong> in the game's menu.</p>
+
+    <h3>Your choices</h3>
+    <ul>
+      <li><strong>Android:</strong> open your phone's Settings, go to Google, then Ads, where you can reset or delete your advertising ID.</li>
+      <li><strong>iOS:</strong> if the game asks for permission to track, you can decline. You can change this later in Settings, under Privacy &amp; Security, then Tracking.</li>
+      <li>Rewarded ads are always optional. You can play without watching them.</li>
+      <li>You can stop all data collection by the game by uninstalling it.</li>
+    </ul>
+
+    <h3>In-app purchases</h3>
+    <p>If the game offers purchases, such as removing ads, payments are handled entirely by Google Play or the Apple App Store. We never receive your payment details.</p>
+
+    <h3>Children</h3>
+    <p>Balloon Panic is not directed at children under 13, and we do not knowingly collect personal information from children. If you believe a child has provided personal information through the game, contact us and we will help remove it.</p>
+
+    <h3>Sharing and selling</h3>
+    <p>We do not sell personal information. Apart from the advertising service described above, the game does not share information with third parties.</p>
+
+    <h3>Data retention and security</h3>
+    <p>We do not run servers that store player data. Information collected by Google AdMob is kept according to Google's policies. Data saved on your device stays there until you delete the game.</p>
+
+    <h3>Changes to this policy</h3>
+    <p>If the game changes in a way that affects your privacy, for example by adding online leaderboards, this page will be updated and the effective date above will change.</p>
+  </section>
+
+  <section id="contact" aria-labelledby="h-contact">
+    <h2 id="h-contact">CONTACT</h2>
+    <p>For questions about the game, bug reports or privacy requests, email the developer:</p>
+    <div class="contact">
+      <code id="email">support@balloonpanic.app</code>
+      <button type="button" id="copy">COPY EMAIL</button>
+      <span class="toast" id="toast" aria-live="polite"></span>
+    </div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© 2026 Boban Todosov</span><span>Balloon Panic · Made with Godot</span></div></footer>
+
+<script>
+(() => {
+const SHAPE = ["...XXXXX...","..XXXXXXX..",".XHHXXXXXX.","XXHHXXXXXXX","XXHXXXXXXXX","XXXXXXXXXXX","XXXXXXXXXXX","XXXXXXXXXDX",".XXXXXXXDX.",".XXXXXXDDX.","..XXXXDDX..","...XXXXX...","....XXX....",".....K....."];
+const PAL = {
+  normal:[{b:'#ff5d6c',h:'#ffc2c8',d:'#b8303f'},{b:'#4fb3ff',h:'#c6e8ff',d:'#2470b8'},{b:'#5fe3b0',h:'#d0fbe9',d:'#2a9a72'},{b:'#c77dff',h:'#ecd6ff',d:'#7f3fb8'},{b:'#ff9a3c',h:'#ffe0bf',d:'#b8611c'}],
+  gold:{b:'#ffcf4a',h:'#fff3c4',d:'#b88a12'}, life:{b:'#ff69b4',h:'#ffc8e1',d:'#b8306e'}, bomb:{b:'#3a3550',h:'#7a7494',d:'#1e1a2e'}, clock:{b:'#7fe7ff',h:'#e8fbff',d:'#2a8fb0'}
+};
+const MARKS = {
+  bomb:[['#f4ecd8',[[4,4],[5,4],[6,4],[3,5],[4,5],[5,5],[6,5],[7,5],[3,6],[5,6],[7,6],[3,7],[4,7],[5,7],[6,7],[7,7],[4,8],[6,8]]],['#ff3048',[[3,6],[7,6]]]],
+  life:[['#ffffff',[[3,3],[4,3],[6,3],[7,3],[3,4],[4,4],[5,4],[6,4],[7,4],[3,5],[4,5],[5,5],[6,5],[7,5],[4,6],[5,6],[6,6],[5,7]]]],
+  clock:[['#1b1530',[[3,3],[4,3],[5,3],[6,3],[7,3],[4,4],[6,4],[5,5],[5,6],[4,7],[6,7],[3,8],[4,8],[5,8],[6,8],[7,8]]],['#ffcf4a',[[5,4],[4,8],[5,8],[6,8],[5,7]]]]
+};
+function sprite(c, marks){
+  const s=document.createElement('canvas'); s.width=13; s.height=16; const g=s.getContext('2d');
+  const fill=new Set();
+  SHAPE.forEach((r,y)=>[...r].forEach((ch,x)=>{ if(ch!=='.') fill.add((x+1)+','+(y+1)); }));
+  g.fillStyle='#120c22';
+  fill.forEach(k=>{ const [x,y]=k.split(',').map(Number); for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1]]) if(!fill.has((x+dx)+','+(y+dy))) g.fillRect(x+dx,y+dy,1,1); });
+  SHAPE.forEach((r,y)=>[...r].forEach((ch,x)=>{ if(ch==='.') return; g.fillStyle = ch==='H'?c.h : (ch==='D'||ch==='K')?c.d : c.b; g.fillRect(x+1,y+1,1,1); }));
+  (marks||[]).forEach(([col,pts])=>{ g.fillStyle=col; pts.forEach(([x,y])=>g.fillRect(x+1,y+1,1,1)); });
+  return s;
+}
+const SPR = PAL.normal.map(c=>sprite(c));
+const SPECIAL = {gold:sprite(PAL.gold), bomb:sprite(PAL.bomb, MARKS.bomb), life:sprite(PAL.life, MARKS.life), clock:sprite(PAL.clock, MARKS.clock)};
+
+document.querySelectorAll('.type canvas').forEach(cv=>{
+  const k=cv.dataset.kind, g=cv.getContext('2d');
+  g.drawImage(k==='normal'?SPR[0]:SPECIAL[k],0,0);
+});
+
+// Hero sky
+const cv=document.getElementById('sky'), ctx=cv.getContext('2d');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let W=0,H=0,bg=null,balloons=[];
+const BANDS=['#1b1530','#241b42','#2e2354','#3a2c63','#4c356e','#6a4175','#8f4e76','#b8616f'];
+function build(){
+  const scale = 3;
+  W=Math.ceil(cv.clientWidth/scale); H=Math.ceil(cv.clientHeight/scale);
+  cv.width=W; cv.height=H; ctx.imageSmoothingEnabled=false;
+  bg=document.createElement('canvas'); bg.width=W; bg.height=H; const g=bg.getContext('2d');
+  const bh=H/BANDS.length;
+  BANDS.forEach((c,i)=>{ g.fillStyle=c; g.fillRect(0,Math.floor(i*bh),W,Math.ceil(bh)+1); if(i){ g.fillStyle=BANDS[i-1]; for(let x=0;x<W;x+=2) g.fillRect(x+(i%2),Math.floor(i*bh),1,1);} });
+  let seed=11; const r=()=>(seed=(seed*9301+49297)%233280)/233280;
+  for(let i=0;i<W*H/260;i++){ g.fillStyle=r()>.75?'#ffcf4a':'#f4ecd8'; g.fillRect(Math.floor(r()*W), 14+Math.floor(r()*H*.5),1,1); }
+  g.fillStyle='#120c22';
+  let x=0; while(x<W){ const w=8+Math.floor(r()*14), h=12+Math.floor(r()*28); g.fillRect(x,H-h,w,h);
+    g.fillStyle='#ffcf4a'; for(let wy=H-h+4; wy<H-3; wy+=6) for(let wx=x+2; wx<x+w-2; wx+=4) if(r()>.6) g.fillRect(wx,wy,1,2);
+    g.fillStyle='#120c22'; x+=w+1; }
+  // spikes pointing down
+  g.fillStyle='#120c22'; g.fillRect(0,0,W,4);
+  for(let sx=0; sx<W; sx+=8) for(let row=0; row<8; row++){
+    const half=Math.max(0,4-Math.floor(row/2));
+    g.fillStyle='#120c22'; g.fillRect(sx+4-half-1,4+row,half*2+2,1);
+    g.fillStyle=row<1?'#8c96aa':'#c9d1e0'; g.fillRect(sx+4-half,4+row,half*2,1);
+    if(half>0){ g.fillStyle='#ffffff'; g.fillRect(sx+4-half,4+row,1,1); }
+  }
+  balloons=[];
+  const n=Math.max(5, Math.floor(W/28));
+  for(let i=0;i<n;i++) balloons.push(spawn(true));
+}
+function spawn(initial){
+  const r=Math.random();
+  const spr = r<.07?SPECIAL.gold : r<.12?SPECIAL.clock : r<.16?SPECIAL.bomb : r<.19?SPECIAL.life : SPR[Math.floor(Math.random()*SPR.length)];
+  // keep balloons in the right half on wide screens so the title stays clear
+  const minX = W>200 ? W*.45 : 4;
+  return {x:minX+Math.random()*(W-minX-16), y: initial? 20+Math.random()*(H-20) : H+4, v:6+Math.random()*7, ph:Math.random()*6.28, spr};
+}
+function draw(dt){
+  ctx.drawImage(bg,0,0);
+  for(const b of balloons){
+    b.y -= b.v*dt; b.ph += dt*2.5;
+    if(b.y < 14){ Object.assign(b, spawn(false)); }
+    const x=Math.round(b.x+Math.sin(b.ph)*1.5), y=Math.round(b.y);
+    ctx.fillStyle='#f4ecd8';
+    for(let i=0;i<8;i++) ctx.fillRect(x+6+Math.round(Math.sin(b.ph*1.3+i*.6)),y+16+i,1,1);
+    ctx.drawImage(b.spr,x,y);
+  }
+}
+let last=0;
+function loop(ts){ const dt=Math.min(.05,(ts-(last||ts))/1000); last=ts; draw(dt); requestAnimationFrame(loop); }
+build(); draw(0);
+if(!reduce) requestAnimationFrame(loop);
+let rt; addEventListener('resize',()=>{ clearTimeout(rt); rt=setTimeout(()=>{ build(); draw(0); },150); });
+
+// Copy email
+const btn=document.getElementById('copy'), toast=document.getElementById('toast'), email=document.getElementById('email');
+btn.addEventListener('click',()=>{
+  const text=email.textContent;
+  const fallback=()=>{ const sel=getSelection(), rg=document.createRange(); rg.selectNodeContents(email); sel.removeAllRanges(); sel.addRange(rg); toast.textContent='Selected. Press Ctrl+C or long-press to copy.'; };
+  try{ navigator.clipboard.writeText(text).then(()=>{ toast.textContent='Email copied.'; }, fallback); }catch(e){ fallback(); }
+});
+})();
+</script>
+</body>
+</html>
